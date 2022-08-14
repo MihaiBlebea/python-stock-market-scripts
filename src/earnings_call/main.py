@@ -1,7 +1,5 @@
 from pandas import DataFrame
 from time import sleep
-# import numpy as np
-# from sklearn.linear_model import LinearRegression
 from src.earnings_call.utils import (
 	get_ticker_data,
 	calc_percentage,

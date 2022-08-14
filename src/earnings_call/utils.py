@@ -39,8 +39,9 @@ def modify_date(date: str, modify: int)-> datetime:
 
 @cache_factory("prices")
 def get_prices(ticker: str, earnings_date: str)-> list:
+	ticker = ticker.upper()
 	yf = YahooFinancials(ticker)
-	start_date = to_format(modify_date(earnings_date, -30))
+	start_date = to_format(modify_date(earnings_date, -2))
 	end_date = to_format(modify_date(earnings_date, 2))
 	prices = yf.get_historical_price_data(
 		start_date,
@@ -51,9 +52,11 @@ def get_prices(ticker: str, earnings_date: str)-> list:
 
 @cache_factory("earnings")
 def get_earnings(ticker: str)-> list:
+	ticker = ticker.upper()
 	return si.get_earnings_history(ticker)
 
 def get_start_end_prices(ticker: str, earnings_date: str)-> tuple[float, float]:
+	ticker = ticker.upper()
 	prices = get_prices(ticker, earnings_date)
 	
 	return (
@@ -66,6 +69,7 @@ def get_avr_price(start_price: float, end_price: float)-> float:
 	return round(start_price + end_price / 2, 2)
 
 def get_ticker_data(ticker: str)-> list:
+	ticker = ticker.upper()
 	earnings = get_earnings(ticker)
 
 	data = []
