@@ -16,8 +16,8 @@ def main():
 	for ticker in tickers:
 		try:
 			data += get_ticker_data(ticker)
-		except:
-			print(f"Skipping {ticker}")
+		except Exception as err:
+			print(f"Skipping {ticker}: {err}")
 			continue
 
 		sleep(2)
