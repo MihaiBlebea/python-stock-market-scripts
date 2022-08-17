@@ -33,6 +33,9 @@ def to_datetime(value: str)-> datetime:
 def to_format(value: datetime)-> str:
 	return value.strftime("%Y-%m-%d")
 
+def to_datetime_format(value: datetime)-> str:
+	return value.strftime("%Y-%m-%d %H:%M")
+
 def modify_date(date: str, modify: int)-> datetime:
 	return to_datetime(date) + timedelta(days=modify)
 
@@ -70,8 +73,7 @@ def fetch_prices(symbol: str, start_date: str, end_date: str) -> List[dict]:
 
 @cache_factory("earnings")
 def get_earnings(ticker: str)-> list:
-	ticker = ticker.upper()
-	return si.get_earnings_history(ticker)
+	return si.get_earnings_history(ticker.upper())
 
 def get_start_end_prices(ticker: str, earnings_date: str)-> tuple[float, float]:
 	prices: List[Quote] = fetch_prices(

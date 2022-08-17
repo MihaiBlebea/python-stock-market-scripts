@@ -1,11 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from src.earnings_call.utils import (
 	get_earnings,
 	get_sp500,
 	to_datetime,
+	modify_date,
+	to_datetime_format
 )
 from pprint import pprint
+from src.earnings_call.telegram import broadcast_message
 
 utc=pytz.UTC
 
@@ -16,18 +19,20 @@ def is_next_earning(earning: dict)-> bool:
 
 def get_last_earnings(earnings: list, current_index: int)-> list:
 	i = current_index + 1
+	max_index = i + 4 if len(earnings) > i + 4 else len(earnings)
 	return [ 
 		{
 			"eps_estimate": earning["epsestimate"],
 			"eps_actual": earning["epsactual"],
 			"diff": round(earning["epsactual"] - earning["epsestimate"], 2)
-		} for earning in earnings[i:i+4] if earning["epsestimate"] is not None and earning["epsactual"] is not None
+		} for earning in earnings[i:max_index] if earning["epsestimate"] is not None and earning["epsactual"] is not None
 	]
 
 def main():
 	universe = get_sp500()
 	earnings_list = []
 	for ticker in universe:
+		print(ticker)
 		earnings = get_earnings(ticker)
 		for i, earning in enumerate(earnings):
 			if is_next_earning(earning):
@@ -40,15 +45,21 @@ def main():
 				})
 				break
 
-
 	calendar_list = sorted(
 		earnings_list, 
 		key=lambda earning: to_datetime(earning["datetime"]),
-		reverse=True,
+		reverse=False,
 	)
 
-	pprint(calendar_list)
+	broadcast_message("Earnings call:\n")
+	print(earnings_list[0])
 
+	for e in earnings_list:
+		message = ""
+		if to_datetime(e["datetime"]).replace(tzinfo=utc) < datetime.now().replace(tzinfo=utc) + timedelta(days=2):
+			message += f"- {e['company']} ({e['symbol']})\n"
+			message += f"\t- { to_datetime_format(to_datetime(e['datetime'])) }\n"
+			broadcast_message(message)
 
 if __name__ == "__main__":
 	main()
