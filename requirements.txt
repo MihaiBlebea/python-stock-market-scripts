@@ -12,6 +12,7 @@ idna==3.3
 importlib-metadata==4.12.0
 joblib==1.1.0
 lxml==4.9.1
+multitasking==0.0.11
 numpy==1.23.1
 openpyxl==3.0.10
 pandas==1.4.3
@@ -37,4 +38,5 @@ w3lib==1.22.0
 websockets==10.3
 yahoo-fin==0.8.9.1
 yahoofinancials==1.6
+yfinance==0.1.74
 zipp==3.8.1

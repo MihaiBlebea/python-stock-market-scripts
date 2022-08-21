@@ -1,4 +1,5 @@
-from typing import Callable
+from ast import Call
+from typing import Callable, List
 from abc import ABC, abstractmethod
 from datetime import datetime
 from dotenv import dotenv_values
@@ -9,6 +10,7 @@ config = dotenv_values(".env")
 Sender = Callable[[str], dict]
 
 DateFormatter = Callable[[str], str]
+
 
 class Telegram(ABC):
 
@@ -31,9 +33,18 @@ class Telegram(ABC):
 		return dt.strftime("%Y-%m-%d %H:%M")
 
 	@abstractmethod
-	def send_earnings_report(earning: dict, sender: Sender, date_formatter: DateFormatter)-> dict:
+	def send_earnings_report(
+		earning: dict,
+		news: List[dict],
+		sender: Sender, 
+		date_formatter: DateFormatter)-> dict:
+
 		message = f"- {earning['company']} ({earning['symbol']})\n"
-		message += f"\t- { date_formatter(earning['datetime']) }\n"
+		message += f"\t- {date_formatter(earning['datetime'])}\n"
+		message += "\t News:"
+		for n in news:
+			message += f"\t\t- {n['title']} - {n['link']}"
+	
 		return sender(message)
 
 if __name__ == "__main__":
