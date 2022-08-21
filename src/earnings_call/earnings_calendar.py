@@ -8,14 +8,15 @@ from src.earnings_call.utils import (
 	to_datetime_format
 )
 from pprint import pprint
-from src.earnings_call.telegram import broadcast_message
+from src.earnings_call.telegram import Telegram
+from src.earnings_call.earnings import Earnings
 
-utc=pytz.UTC
+# utc=pytz.UTC
 
-def is_next_earning(earning: dict)-> bool:
-	return earning["epsestimate"] is not None\
-		and earning["epsactual"] is None\
-		and to_datetime(earning["startdatetime"]).replace(tzinfo=utc) > datetime.now().replace(tzinfo=utc)
+# def is_next_earning(earning: dict)-> bool:
+# 	return earning["epsestimate"] is not None\
+# 		and earning["epsactual"] is None\
+# 		and to_datetime(earning["startdatetime"]).replace(tzinfo=utc) > datetime.now().replace(tzinfo=utc)
 
 def get_last_earnings(earnings: list, current_index: int)-> list:
 	i = current_index + 1
@@ -29,13 +30,13 @@ def get_last_earnings(earnings: list, current_index: int)-> list:
 	]
 
 def main():
-	universe = get_sp500()
+	universe = Earnings.get_sp500()
 	earnings_list = []
 	for ticker in universe:
 		print(ticker)
-		earnings = get_earnings(ticker)
+		earnings = Earnings.get_earnings(ticker)
 		for i, earning in enumerate(earnings):
-			if is_next_earning(earning):
+			if Earnings.is_next_earning(earning):
 				earnings_list.append({
 					"company": earning["companyshortname"],
 					"symbol": earning["ticker"],
@@ -51,15 +52,18 @@ def main():
 		reverse=False,
 	)
 
-	broadcast_message("Earnings call:\n")
+	Telegram.broadcast_message("Earnings call:\n")
 	print(earnings_list[0])
 
 	for e in earnings_list:
 		message = ""
 		if to_datetime(e["datetime"]).replace(tzinfo=utc) < datetime.now().replace(tzinfo=utc) + timedelta(days=2):
-			message += f"- {e['company']} ({e['symbol']})\n"
-			message += f"\t- { to_datetime_format(to_datetime(e['datetime'])) }\n"
-			broadcast_message(message)
+			res = Telegram.send_earnings_report(
+				e,
+				Telegram.broadcast_message,
+				Telegram.date_to_string,
+			)
+			print(res)
 
 if __name__ == "__main__":
 	main()
