@@ -1,5 +1,6 @@
 .~lock.output.xlsx#
 cache
+artefacts
 .vscode
 env
 .env
