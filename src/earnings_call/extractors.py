@@ -1,14 +1,8 @@
-from re import S
 from typing import List
 from pipeline import Extractor, cache_factory
 import yfinance as yf
-from dotenv import dotenv_values
-import requests as re
-from time import sleep
 import json
 import time
-
-from src.earnings_call.utils import get_sp500
 
 
 ONE_DAY = 24 * 60 * 60
@@ -42,9 +36,13 @@ class CalendarExtractor(Extractor):
 	def get_after_7_days(self)-> int:
 		return self.get_now() + ONE_DAY * 7 * 1000
 
+	def _flatten(self, nested_list: List[List[dict]])-> List[dict]:
+		return [item for sublist in nested_list for item in sublist]
+
 	@cache_factory("./cache/calendars", "calendar", ONE_DAY)
 	def extract_one(self, ticker: str)-> dict:
 		print(f"extracting {ticker}")
+
 		calendar = list(json.loads(
 			yf.Ticker(ticker).calendar.to_json()
 		).values())
@@ -57,10 +55,14 @@ class CalendarExtractor(Extractor):
 	def extract(self, tickers: List[str])-> dict:
 		if isinstance(tickers, list) is False:
 			raise Exception("invalid type not list")
-		calendar = [self.extract_one(t) for t in tickers][0]
+
+		calendar = self._flatten(
+			[self.extract_one(t) for t in tickers]
+		)
+		
 		now = self.get_now() 
 		one_week = self.get_after_7_days()
-		
+
 		return list(filter(lambda cal: now < cal["Earnings Date"] < one_week , calendar))
 
 
@@ -80,7 +82,7 @@ class MainExtractor(Extractor):
 
 	def extract(self)-> List[dict]:
 		calendars = self.calendar.extract(self.tickers)
-		
+
 		return [
 			{
 				"symbol": calendar["symbol"],

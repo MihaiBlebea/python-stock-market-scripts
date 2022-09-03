@@ -16,7 +16,8 @@ def get_sp500()-> List[str]:
 
 
 if __name__ == "__main__":
-	universe = get_sp500() + ["BBW"]
+	# universe = get_sp500() + ["BBW"]
+	universe = ["GAMA.L", "SOHO.L"]
 	pipe = Pipeline(
 		MainExtractor(
 			CalendarExtractor(), 
